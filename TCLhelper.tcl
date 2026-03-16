@@ -25,7 +25,7 @@ button .exportUI.btnCgroup -text "Group fasteners into an assembly" -command run
 pack .exportUI.btnCgroup -pady 10 -padx 30 -fill x
 
 # --- Part: Create Node from Fastener STP ---
-button .exportUI.btnCnode -text "Create center node from stp fastener" -command run_node_create
+button .exportUI.btnCnode -text "Create center node from solid fastener" -command run_node_create
 pack .exportUI.btnCnode -pady 10 -padx 30 -fill x
 
 # --- Part: Create CBUSH ---
@@ -1256,9 +1256,9 @@ proc ShowHelp {} {
     set instructions "How to use this tool:\n\n"
 
     append instructions "HYPERMESH\n\n"
-    append instructions "Group fasteners into an assembly: groups all components whose name starts with the same reference (same NAS) into a single assembly.\n\n"
-    append instructions "Create center node from STP fastener: creates a center node for each solid fastener (needed to project it into a target component in cbush creation).\n\n"
-    append instructions "Create CBUSH from node lists: creates CBUSH elements between a list of node A and a list of node B, using the nearest B node for each A node (no need to select pairs manually).\n\n"
+    append instructions "- Group fasteners into an assembly: groups all components whose name starts with the same reference (same NAS) into a single assembly\n\n"
+    append instructions "- Create center node from solid fastener: creates a center node for each solid fastener (Needed to project it into a target component in CBUSH creation and PowerPoint presentation of fastener locations).\n\n"
+    append instructions "- Create CBUSH from node lists: creates CBUSH elements between a list of node A and a list of node B, using the nearest B node for each A node (no need to select pairs manually).\n\n"
 
     append instructions "HYPERVIEW\n\n"
     append instructions "1. Load your model and all result files in HyperView.\n\n"
