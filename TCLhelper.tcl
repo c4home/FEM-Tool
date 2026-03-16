@@ -1242,7 +1242,7 @@ proc ShowHelp {} {
     # Create new window
     toplevel .helpUI
     wm title .helpUI "Instructions"
-    wm geometry .helpUI "400x300"
+    wm geometry .helpUI "400x700"
     wm attributes .helpUI -topmost 1
     
     # Add text widget with scrollbar
@@ -1253,15 +1253,22 @@ proc ShowHelp {} {
     pack .helpUI.f.txt -side left -fill both -expand true
     
     # Define your instructions here
-    set instructions "HOW TO USE THIS TOOL:\n\n"
-    append instructions "1. Load your model and results in HyperView.\n\n"
+    set instructions "How to use this tool:\n\n"
+
+    append instructions "HYPERMESH\n\n"
+    append instructions "Group fasteners into an assembly: groups all components whose name starts with the same reference (same NAS) into a single assembly.\n\n"
+    append instructions "Create center node from STP fastener: creates a center node for each solid fastener (needed to project it into a target component in cbush creation).\n\n"
+    append instructions "Create CBUSH from node lists: creates CBUSH elements between a list of node A and a list of node B, using the nearest B node for each A node (no need to select pairs manually).\n\n"
+
+    append instructions "HYPERVIEW\n\n"
+    append instructions "1. Load your model and all result files in HyperView.\n\n"
     append instructions "2. Selection Format:\n"
     append instructions "   - all: Selects all elements\n"
     append instructions "   - 1-100: Selects element ID range\n"
     append instructions "   - id 5: Selects element ID 5\n"
     append instructions "   - selectionset 5: Selects User Set ID 5\n\n"
-    append instructions "3. Enter your allowable values (Fsu, Fcu, Ftu) for Reserve Factor (RF) calculations.\n\n"
-    append instructions "4. Click the export button for the specific data you want to retrieve. The script will iterate through all subcases automatically."
+    append instructions "3. Enter your allowable values (Fsu, Fcu, Ftu, etc.) for Reserve Factor (RF) calculations.\n\n"
+    append instructions "4. Click the export button for the specific data you want to retrieve. The script will iterate through all subcases automatically and export data into CSV file.\n"
     
     # Insert text and make it read-only
     .helpUI.f.txt insert end $instructions
