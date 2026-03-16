@@ -33,14 +33,14 @@ pack .exportUI.frmSet.ent -side left -padx 5
 
 # --- Part 1: Displacement Extreme Exporter ---
 
-button .exportUI.btn -text "Export Displacements" -command ExportExtremeRobust
+button .exportUI.btn -text "Export Displacements (ALL)" -command ExportExtremeRobust
 pack .exportUI.btn -pady 5 -padx 30 -fill x
 
 # --- Part 2: Stress Exporter ---
 frame .exportUI.sep0 -height 2 -borderwidth 1 -relief sunken
 pack .exportUI.sep0 -fill x -padx 10 -pady 10
 
-button .exportUI.btnStress -text "Stress VonMises, Max/Min Prin Stress " -command ExportStressForSet
+button .exportUI.btnStress -text "Stress VonMises, Max/Min Prin" -command ExportStressForSet
 pack .exportUI.btnStress -pady 10 -padx 30 -fill x
 
 # --- Part 3: Failure Index Exporter ---
