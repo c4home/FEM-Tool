@@ -25,14 +25,14 @@ button .exportUI.btnCgroup -text "Group fasteners into an assembly" -command run
 pack .exportUI.btnCgroup -pady 10 -padx 30 -fill x
 
 # --- Part: Create Node from Fastener STP ---
-button .exportUI.btnCnode -text "Create node from stp fastener" -command run_node_create
+button .exportUI.btnCnode -text "Create center node from stp fastener" -command run_node_create
 pack .exportUI.btnCnode -pady 10 -padx 30 -fill x
 
 # --- Part: Create CBUSH ---
-button .exportUI.btnCbush -text "Create Cbush" -command run_create_cbush
+button .exportUI.btnCbush -text "Create Cbush from two node lists" -command run_create_cbush
 pack .exportUI.btnCbush -pady 10 -padx 30 -fill x
 
-# Create the second label with a DIFFERENT name
+# Create the second label 
 label .exportUI.lblFooter2 -text "Hyperview" -font {Helvetica 10 bold}
 pack .exportUI.lblFooter2 -anchor w -padx 1 -pady {0 1}
 
