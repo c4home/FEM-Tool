@@ -33,7 +33,7 @@ button .exportUI.btnCbush -text "Create Cbush from two node lists" -command run_
 pack .exportUI.btnCbush -pady 10 -padx 30 -fill x
 
 # Create the second label 
-label .exportUI.lblFooter2 -text "Hyperview" -font {Helvetica 10 bold}
+label .exportUI.lblFooter2 -text "HyperView" -font {Helvetica 10 bold}
 pack .exportUI.lblFooter2 -anchor w -padx 1 -pady {0 1}
 
 frame .exportUI.sep11 -height 2 -borderwidth 1 -relief sunken
@@ -1266,7 +1266,7 @@ proc ShowHelp {} {
     append instructions "   - all: Selects all elements\n"
     append instructions "   - 1-100: Selects element ID range\n"
     append instructions "   - id 5: Selects element ID 5\n"
-    append instructions "   - selectionset 5: Selects User Set ID 5\n\n"
+    append instructions "   - selectionset == 5: Selects User Set ID 5\n\n"
     append instructions "3. Enter your allowable values (Fsu, Fcu, Ftu, etc.) for Reserve Factor (RF) calculations.\n\n"
     append instructions "4. Click the export button for the specific data you want to retrieve. The script will iterate through all subcases automatically and export data into CSV file.\n"
     
