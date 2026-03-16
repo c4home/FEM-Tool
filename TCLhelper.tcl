@@ -1257,7 +1257,7 @@ proc ShowHelp {} {
 
     append instructions "HYPERMESH\n\n"
     append instructions "- Group fasteners into an assembly: groups all components whose name starts with the same reference (same NAS) into a single assembly\n\n"
-    append instructions "- Create center node from solid fastener: creates a center node for each solid fastener (Needed to project it into a target component in CBUSH creation and PowerPoint presentation of fastener locations).\n\n"
+    append instructions "- Create center node from solid fastener: creates a center node for each solid fastener (Needed to project it into a target component when creating CBUSH elements and PowerPoint presentation of fastener locations).\n\n"
     append instructions "- Create CBUSH from node lists: creates CBUSH elements between a list of node A and a list of node B, using the nearest B node for each A node (no need to select pairs manually).\n\n"
 
     append instructions "HYPERVIEW\n\n"
