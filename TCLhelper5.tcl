@@ -1436,11 +1436,25 @@ proc run_create_cbush {} {
         return
     }
     
+    # ── Select PBUSH Property ──
+    *clearmark properties 1
+    *createmarkpanel properties 1 "Select the PBUSH property for the new elements:"
+    set prop_id [hm_getmark properties 1]
+    *clearmark properties 1
+    
+    if {[llength $prop_id] == 0} {
+        tk_messageBox -title "Error" -message "No property selected. Operation cancelled." -icon error
+        return
+    }
+    # If the user selects multiple by accident, just grab the first one
+    set selected_prop_id [lindex $prop_id 0]
+    
     # ── Prepare Element Type ──
     # Explicitly set the spring type to CBUSH
     *elementtype spring CBUSH
     
     set cbush_count 0
+    set new_elements_list {}
     
     # Start the history state (allows users to 'Undo' the whole batch at once)
     catch { *startnotehistorystate {Created CBUSH elements} }
@@ -1466,18 +1480,35 @@ proc run_create_cbush {} {
         
         # Create CBUSH if a nearest node was found
         if {$nearest_node_b ne ""} {
-            # Use *springos with the standard 0 0 0 0 1 1 0 parameters
+            # Use *springos with the standard parameters
             if {![catch {*springos $node_a $nearest_node_b "" 0 0 0 0 1 1 0} err]} {
                 incr cbush_count
+                
+                # Use hm_latestentityid to get the exact element ID
+                set new_elem_id [hm_latestentityid elements]
+                lappend new_elements_list $new_elem_id
+                
             } else {
                 puts "Failed to create CBUSH between $node_a and $nearest_node_b. Error: $err"
             }
         }
     }
     
+    # ── Assign the Property to the New Elements ──
+    if {[llength $new_elements_list] > 0} {
+        *clearmark elements 1
+        # Add all newly created elements to mark 1
+        eval "*createmark elements 1 $new_elements_list"
+        
+        # Use *setvalue to properly link the elements to the selected property ID
+        *setvalue elements mark=1 propertyid=$selected_prop_id
+        
+        *clearmark elements 1
+    }
+
     catch { *endnotehistorystate {Created CBUSH elements} }
     
     hm_redraw
     tk_messageBox -title "Success" \
-        -message "Created $cbush_count CBUSH elements between nearest nodes!" -icon info
+        -message "Created $cbush_count CBUSH elements and assigned PBUSH property ID: $selected_prop_id!" -icon info
 }
