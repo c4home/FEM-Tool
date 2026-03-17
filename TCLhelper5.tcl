@@ -160,16 +160,16 @@ set ::Fs 1000.0
 button .exportUI.btnFastener -text "1D Element Forces (X, Y, Z)" -command ExportFastenerForces
 pack .exportUI.btnFastener -pady 10 -padx 30 -fill x
 
-# -----------------------------------------------------------------
-# Helper Function to Find Extreme Value, Calculate RF, FormatNumber
-# -----------------------------------------------------------------
+# ---------------------------------------------------------------------------------------
+# Helper Function to Find Extreme Value, Calculate RF, FormatNumber, ForceshowAll element
+# ---------------------------------------------------------------------------------------
 
 proc SafeRF {allowable stress} {
     if {$stress eq ""} {return "N/A"}
     if {![string is double -strict $allowable]} {return "N/A"}
     if {![string is double -strict $stress]} {return "N/A"}
     if {$stress == 0} {return "N/A"}
-    set rf_val [expr {abs($allowable) / $stress}]
+    set rf_val [expr {abs($allowable / $stress)}]
     return [FormatNumber $rf_val 3]
 }
 
@@ -188,6 +188,19 @@ proc FormatNumber {value {decimals 3}} {
     }
     set formatted [format "%.${decimals}f" $value]
     return [string map { "." "," } $formatted]
+}
+
+proc ForceShowAll {} {
+
+    # Unmask everything
+    temp_mod UnMaskAll
+
+    # Redraw the client
+    temp_cli Draw
+
+    # Force Tcl/Tk to process the redraw immediately
+    update idletasks
+    update
 }
 
 # -----------------------------------------------------------------
@@ -209,6 +222,8 @@ proc ExportDisplacement {} {
 
     win GetClientHandle cli
     cli GetModelHandle mod [cli GetActiveModel]
+
+    ForceShowAll
 
     mod GetResultCtrlHandle res
     res GetContourCtrlHandle cont
@@ -317,9 +332,11 @@ proc ExportStressForSet {} {
     win GetClientHandle cli
     cli GetModelHandle mod [cli GetActiveModel]
     
+    ForceShowAll
+    
     set sel_id [mod AddSelectionSet element]
     mod GetSelectionSetHandle elem_set $sel_id
-    
+   
     # Evaluate selection safely
     if {[catch {eval "elem_set Add \"$user_elem_sel\""}]} {
         tk_messageBox -message "Invalid selection: '$user_elem_sel'. Exporting 'all'. Make sure to use syntax like 'selectionset == 5'." -parent .exportUI
@@ -331,7 +348,6 @@ proc ExportStressForSet {} {
     if {$num_elems == 0} {
         tk_messageBox -message "Warning: Your selection '$user_elem_sel' resulted in 0 elements. The exported file will contain N/A." -parent .exportUI -icon warning
     }
-
     
     mod GetResultCtrlHandle res
     res GetContourCtrlHandle cont
@@ -354,10 +370,10 @@ proc ExportStressForSet {} {
         if {[string match "*von*mises*" $cl] && ![string match "*signed*" $cl]} {
             set c_von $c
         }
-        if {[string match "*max*principal*" $cl] || [string match "*p1*major*" $cl]} { 
+        if {[string match "*max*principal*" $cl] || [string match "*p1*major*" $cl] && ![string match "*in*plane*" $cl]} { 
             set c_max $c 
         }
-        if {[string match "*min*principal*" $cl] || [string match "*p3*minor*" $cl]} { 
+        if {[string match "*min*principal*" $cl] || [string match "*p3*minor*" $cl] && ![string match "*in*plane*" $cl]} { 
             set c_min $c 
         }
         if {[string match "*maxshear*" $cl]} { 
@@ -497,6 +513,8 @@ proc ExportFailureIndexForSet {} {
     win GetClientHandle cli
     cli GetModelHandle mod [cli GetActiveModel]
 
+    ForceShowAll
+
     set sel_id [mod AddSelectionSet element]
     mod GetSelectionSetHandle elem_set $sel_id
 
@@ -626,6 +644,8 @@ proc ExportInterLaminarStressForSet {} {
 
     win GetClientHandle cli
     cli GetModelHandle mod [cli GetActiveModel]
+
+    ForceShowAll
 
     set sel_id [mod AddSelectionSet element]
     mod GetSelectionSetHandle elem_set $sel_id
@@ -767,6 +787,8 @@ proc ExportStressExtremeLayer {} {
 
     win GetClientHandle cli
     cli GetModelHandle mod [cli GetActiveModel]
+
+    ForceShowAll
 
     set sel_id [mod AddSelectionSet element]
     mod GetSelectionSetHandle elem_set $sel_id
@@ -972,6 +994,8 @@ proc ExportStressExtremeLayerZXYZ {} {
     win GetClientHandle cli
     cli GetModelHandle mod [cli GetActiveModel]
 
+    ForceShowAll
+
     set sel_id [mod AddSelectionSet element]
     mod GetSelectionSetHandle elem_set $sel_id
 
@@ -1126,6 +1150,8 @@ proc ExportFastenerForces {} {
 
     win GetClientHandle cli
     cli GetModelHandle mod [cli GetActiveModel]
+
+    ForceShowAll
 
     set sel_id [mod AddSelectionSet element]
     mod GetSelectionSetHandle elem_set $sel_id
