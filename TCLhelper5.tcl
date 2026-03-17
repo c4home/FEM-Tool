@@ -10,7 +10,7 @@ wm geometry .exportUI "450x900"
 wm attributes .exportUI -topmost 1
 
 # Help Button
-button .exportUI.btnHelp -text "Help / Instructions" -command ShowHelp -bg "lightblue"
+button .exportUI.btnHelp -text "Instructions" -command ShowHelp -bg "lightblue"
 pack .exportUI.btnHelp -pady {10 10} -padx 30 -fill x
 
 # Create the first label
@@ -29,7 +29,7 @@ button .exportUI.btnCnode -text "Create center node from solid fastener" -comman
 pack .exportUI.btnCnode -pady 10 -padx 30 -fill x
 
 # --- Part: Create CBUSH ---
-button .exportUI.btnCbush -text "Create Cbush from two node lists" -command run_create_cbush
+button .exportUI.btnCbush -text "Create CBUSH from two node lists" -command run_create_cbush
 pack .exportUI.btnCbush -pady 10 -padx 30 -fill x
 
 # Create the second label 
