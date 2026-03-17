@@ -192,15 +192,30 @@ proc FormatNumber {value {decimals 3}} {
 
 proc ForceShowAll {} {
 
-    # Unmask everything
-    temp_mod UnMaskAll
+    # 1. Use the active session directly rather than temporary handles
+    hwi GetSessionHandle force_sess
+    force_sess GetProjectHandle force_proj
+    force_proj GetPageHandle force_page [force_proj GetActivePage]
+    force_page GetWindowHandle force_win [force_page GetActiveWindow]
+    force_win GetClientHandle force_cli
+    force_cli GetModelHandle force_mod [force_cli GetActiveModel]
 
-    # Redraw the client
-    temp_cli Draw
+    # 2. Unmask everything
+    force_mod UnMaskAll
+    
+    # 3. Force the draw on the active client
+    force_cli Draw
 
-    # Force Tcl/Tk to process the redraw immediately
+    # 4. Clean up handles
+    foreach h {force_mod force_cli force_win force_page force_proj force_sess} {
+        catch {$h ReleaseHandle}
+    }
+
+    # 5. Force Tk to process the draw, then pause for 50 milliseconds
+    # This guarantees the screen updates before the heavy Tcl loop starts.
     update idletasks
     update
+    after 50
 }
 
 # -----------------------------------------------------------------
