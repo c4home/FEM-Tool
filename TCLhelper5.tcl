@@ -32,6 +32,26 @@ pack .exportUI.btnCnode -pady 10 -padx 30 -fill x
 button .exportUI.btnCbush -text "Create CBUSH from two node lists" -command run_create_cbush
 pack .exportUI.btnCbush -pady 10 -padx 30 -fill x
 
+# --- Part Import Multi Step ---
+button .exportUI.btnImportStep -text "Import Multi STEP Files" -command runimportstep
+pack .exportUI.btnImportStep -pady 10 -padx 30 -fill x
+
+# --- Part Rename Components ---
+frame .exportUI.frmRename
+pack .exportUI.frmRename -pady 5
+
+label .exportUI.frmRename.lbl -text "Prefix:"
+entry .exportUI.frmRename.ent -textvariable comp_prefix -width 15
+button .exportUI.frmRename.btn -text "Add Prefix to Components" -command runaddprefix
+
+pack .exportUI.frmRename.lbl -side left -padx 5
+pack .exportUI.frmRename.ent -side left -padx 5
+pack .exportUI.frmRename.btn -side left -padx 5
+
+# Set a default prefix
+set comp_prefix "PREFIX_"
+
+
 # Create the second label 
 label .exportUI.lblFooter2 -text "HyperView" -font {Helvetica 10 bold}
 pack .exportUI.lblFooter2 -anchor w -padx 1 -pady {0 1}
@@ -1512,3 +1532,135 @@ proc run_create_cbush {} {
     tk_messageBox -title "Success" \
         -message "Created $cbush_count CBUSH elements and assigned PBUSH property ID: $selected_prop_id!" -icon info
 }
+
+# ==============================================================================
+# Helper Function: runimportstep
+# Purpose: Allows user to select multiple .stp/.step CAD files
+#          and imports the geometries into the current HyperMesh session.
+# ==============================================================================
+proc runimportstep {} {
+    # 1. Open a file dialog that allows multiple selections for STEP files
+    set file_paths [tk_getOpenFile -multiple 1 -title "Select STEP CAD Files to Import" \
+        -filetypes {
+            {"STEP Files" {*.stp *.step}}
+            {"All Files" {*.*}}
+        }]
+    
+    # 2. Check if the user cancelled the dialog
+    if {$file_paths eq ""} {
+        return
+    }
+    
+    set success_count 0
+    set failed_files ""
+
+    # 3. Loop through the selected files and import them
+    foreach file_path $file_paths {
+        
+        # Start a batch import process (standard for modern HyperMesh geometry imports)
+        catch { *start_batch_import 3 }
+        catch { *setgeomrefinelevel 1 }
+        
+        # Execute the exact *geomimport command structure
+        if {![catch {*geomimport "step_ct" $file_path "BodyIDAsMetadata=off" "CleanupTol=-0.01" "ColorsAsMetadata=off" "CreationType=Parts" "DegSurfTol=0.0" "DensityAsMetadata=off" "DisplayRepresentation=off" "DoNotMergeEdges=off" "FullNameAsMetadata=off" "ImportBlanked=off" "ImportCoordinateSystems=on" "ImportFreeCurves=on" "ImportFreePoints=on" "LayerAsMetadata=off" "LegacyHierarchyAsMetadata=off" "MID=MaterialId" "MaterialName=Material" "MeshFlag=MeshFlag" "OriginalIdAsMetadata=on" "PID=PID" "PartName=PartName" "PartNumber=PartNumber" "Revision=Revision" "ScaleFactor=1.0" "SkipCreationOfSolid=off" "SplitComponents=Part" "StitchingAcrossBodies=on" "TagsAsMetadata=on" "TargetUnits=CAD units" "ThicknessName=Thickness" "UID=UID" "UpdateSketchingUnits=on" "VariantCondition=VariantCondition" "VariantScope=VariantScope"} err]} {
+            
+            incr success_count
+        } else {
+            append failed_files "[file tail $file_path]\n"
+            puts "Error importing [file tail $file_path]: $err"
+        }
+        
+        # End the batch import process
+        catch { *end_batch_import }
+    }
+    
+    # 4. Redraw the screen to show the newly imported geometry
+    catch {hm_redraw}
+    
+    # 5. Show summary message
+    if {$failed_files eq ""} {
+        tk_messageBox -title "Import Complete" -message "Successfully imported $success_count STEP file(s)." -icon info
+    } else {
+        tk_messageBox -title "Import Complete with Errors" \
+            -message "Successfully imported $success_count file(s).\n\nFailed to import:\n$failed_files" -icon warning
+    }
+}
+
+# ==============================================================================
+# Helper Function: runaddprefix
+# Purpose: Adds a string prefix to components. If the prefix contains a number
+#          (e.g., "100_"), it will auto-increment (101_, 102_) for each component.
+#          Allows user to select components and adds a string prefix to their names.
+# ==============================================================================
+proc runaddprefix {} {
+    global comp_prefix
+    
+    # 1. Check if the user left the prefix box empty
+    if {[string trim $comp_prefix] eq ""} {
+        tk_messageBox -title "Error" -message "Please enter a prefix in the text box." -icon warning
+        return
+    }
+    
+    # 2. Ask the user to select components
+    *clearmark comps 1
+    *createmarkpanel comps 1 "Select Components to rename:"
+    set comp_ids [hm_getmark comps 1]
+    *clearmark comps 1
+    
+    if {[llength $comp_ids] == 0} {
+        return
+    }
+
+    set success_count 0
+    
+    # 3. Analyze the user's prefix to see if it contains a number
+    # This regexp looks for three parts:
+    # prefix_text (anything before number), number (the digits), suffix_text (anything after)
+    # Example: "Prefix_100_A" -> prefix_text="Prefix_", number="100", suffix_text="_A"
+    
+    set has_number 0
+    if {[regexp {^(.*?)([0-9]+)(.*?)$} $comp_prefix match prefix_text number suffix_text]} {
+        set has_number 1
+        # Remove any leading zeros from the number for safe math evaluation, 
+        # but store the original length so we can pad it back if needed (e.g. 001 -> 002)
+        set num_len [string length $number]
+        # scan forces it to be read as a base-10 integer (prevents octal error on "08")
+        scan $number "%d" current_num 
+    }
+
+    # 4. Loop through each selected component
+    foreach id $comp_ids {
+        # Get the current name of the component
+        set current_name [hm_getentityvalue comps $id name 1]
+        
+        # Determine the current prefix to apply for this specific loop
+        if {$has_number} {
+            # Format the number back to its original zero-padding (e.g., 001, 002)
+            set formatted_num [format "%0${num_len}d" $current_num]
+            set active_prefix "${prefix_text}${formatted_num}${suffix_text}"
+        } else {
+            set active_prefix $comp_prefix
+        }
+        
+        # Prevent double-prefixing if the user clicks the same component twice
+        if {![string match "${active_prefix}*" $current_name]} {
+            
+            # Construct the new name
+            set new_name "${active_prefix}${current_name}"
+            
+            # Update the component name in the database
+            if {![catch {*setvalue comps id=$id name=$new_name}]} {
+                incr success_count
+                
+                # If we applied it successfully, increment the number for the next loop
+                if {$has_number} {
+                    incr current_num
+                }
+            }
+        }
+    }
+    
+    hm_redraw
+    tk_messageBox -title "Done" -message "Successfully added prefix to $success_count component(s)." -icon info
+}
+
